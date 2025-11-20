@@ -2,6 +2,7 @@ package io.revlabs.capacitor.localauth;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -122,10 +123,22 @@ public class LocalAuth {
         // Configure the BiometricPrompt settings
         BiometricPrompt.PromptInfo.Builder promptInfoBuilder = new BiometricPrompt.PromptInfo.Builder()
                 .setTitle(title != null ? title : "Authentication")
-                .setSubtitle(subtitle != null ? subtitle : "Please authenticate to continue")
-                // Allow both biometric authentication and device credentials (PIN, pattern, etc.)
-                .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL);
-        
+                .setSubtitle(subtitle != null ? subtitle : "Please authenticate to continue");
+
+        // Android API level determines how to configure authentication methods
+        // API 30+ supports BIOMETRIC_STRONG | DEVICE_CREDENTIAL combination
+        // API 28-29 requires using the deprecated setDeviceCredentialAllowed() method
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // API 30 (Android 11) and above: Use the modern approach
+            promptInfoBuilder.setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG | BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            );
+        } else {
+            // API 28-29: Use the deprecated method for backward compatibility
+            promptInfoBuilder
+                .setDeviceCredentialAllowed(true);
+        }
+
         // Build the final prompt configuration
         BiometricPrompt.PromptInfo promptInfo = promptInfoBuilder.build();
         
