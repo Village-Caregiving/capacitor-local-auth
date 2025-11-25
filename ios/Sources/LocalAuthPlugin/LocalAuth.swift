@@ -20,19 +20,23 @@ import LocalAuthentication
     @objc public func checkAvailability() -> [String: Bool] {
         let context = LAContext()
         var error: NSError?
-        
+
         // Check if biometric authentication is available
         // This includes Touch ID and Face ID depending on the device
         let canEvaluateBiometrics = context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error)
-        
+
+        // Only consider biometrics available if enrolled (not just hardware capability)
+        // This prevents incorrectly reporting availability when biometrics exist but aren't enrolled
+        let biometricsAvailable = canEvaluateBiometrics && (error as? LAError)?.code != .biometryNotEnrolled
+
         // Check if device credentials (passcode) is available
         // .deviceOwnerAuthentication includes both biometrics and passcode
         let canEvaluateDeviceCredentials = context.canEvaluatePolicy(.deviceOwnerAuthentication, error: &error)
-        
+
         return [
-            "biometrics": canEvaluateBiometrics,
+            "biometrics": biometricsAvailable,
             "deviceCredentials": canEvaluateDeviceCredentials,
-            "available": canEvaluateBiometrics || canEvaluateDeviceCredentials
+            "available": biometricsAvailable || canEvaluateDeviceCredentials
         ]
     }
     
