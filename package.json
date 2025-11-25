@@ -1,6 +1,6 @@
 {
   "name": "@revlabs/capacitor-local-auth",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "thin wrapper around native iOS LocalAuthentication and Android Biometric apis",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
